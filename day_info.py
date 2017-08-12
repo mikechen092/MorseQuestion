@@ -1,7 +1,7 @@
 import datetime
 
 
-class day_info():
+class Day_Info():
 
     #initialize the date_price class with a datetime object and a price
     def __init__(self,dt_obj,p,q):
@@ -24,8 +24,8 @@ class day_info():
     # returns the datetime obj
     def get_date(self):
 
-        return self.dt
+        return self.date_time
 
     # returns true/false when comparing to another date_price obj (NECESSARY?)
-    def compare(self,other_dt):
+    # def compare(self,other_dt):
 
