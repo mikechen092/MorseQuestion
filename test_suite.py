@@ -381,7 +381,7 @@ class TestStatisticsTool(unittest.TestCase):
         db = Database()
 
         self.assertEqual(parse_file("test_files\\sample_test.txt",db), 0)
-        
+
 
     # test parse_file function if the correct error code is returned if the filename is not valid
     def test_parse_file_filename(self):
@@ -406,6 +406,37 @@ class TestStatisticsTool(unittest.TestCase):
         db = Database()
 
         self.assertEqual(parse_file("test_files\\incorrect_units.txt", db), 4)
+
+    # tests search_db function if correct error code is returned when database is empty
+    def test_search_db_empty(self):
+        db = Database()
+
+        val = parse_file("test_files\\empty_file.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val,0)
+        self.assertEqual(search_db(datetime.datetime(2005,3,2,1),db),5)
+
+    # tests search_db function if correct error code is returned when function is given invalid datetime
+    def test_search_db_comparison(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+        self.assertEqual(search_db(3,db),6)
+
+    def test_search_db_datetime_less(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+        self.assertEqual(search_db(datetime.datetime(2005,1,2,3),db),0)
+
+
 
 
 
