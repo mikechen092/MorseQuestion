@@ -17,11 +17,15 @@ ERROR CODES
 7.EmptyDbError in get_statistics
 8.NumberOfArgumentsError in main
 
-
 """
 #TODO: find a way to check print statements in unittest
 
-# get_statistics returns statistics about a range of values within the database defined by CLI given datetime objects
+# get_statistics - prints statistics about a range of values within the database
+#                  defined by the datetimes given. does not assume first datetime is
+#                  the lower range and second datetime is the higher range
+#   @param date_time1 - datetime given to define the search range
+#   @param date_time2 - datetime given to define the search range
+#   @param db - Database object to search from
 def get_statistics(date_time1,date_time2,db):
 
     # if the database is empty there cannot be any information returned
@@ -95,7 +99,7 @@ def get_statistics(date_time1,date_time2,db):
 
             else:
 
-                print("Median Units:  %.2f" %units_arr[len(units_arr)/2])
+                print("Median Units:  %.2f" %units_arr[int(len(units_arr)/2)])
 
         # calculate the standard deviation
         for num in units_arr:
@@ -109,7 +113,9 @@ def get_statistics(date_time1,date_time2,db):
         return 0
 
 
-# search_db searches the db for the desired datetime object and prints the information
+# search_db - searches the db for the desired datetime object and prints the information
+#   @param datetime - the datetime to look for in the Database object
+#   @param db - Database object to search from
 def search_db(date_time, db):
 
     # if the database is empty there cannot be any information returned
@@ -122,7 +128,7 @@ def search_db(date_time, db):
 
         # try to compare the date given with the smallest day_info object
         try:
-            print(date_time)
+
             # make sure date_time given is in UTC or else you cannot comapre
             date_time_utc = date_time.replace(tzinfo=timezone('UTC'))
 
@@ -166,7 +172,10 @@ def search_db(date_time, db):
             print("Object given is ",str(type(date_time))," and cannot be compared to a datetime object")
             return 6
 
-# every line in the file is taken and converted into a day_info obj
+# parse_file - every line in the file is taken and converted into a day_info obj and
+#              inserted into the database as an entry
+#   @param filename - file path of where the file to read from is located
+#   @param db - Database object to add entries to
 def parse_file(filename,db):
 
     # if you cannot open the file then exit w/ an error message
@@ -246,7 +255,8 @@ def main():
             dt2 = args['datetimes'][1]
             return get_statistics(dt1,dt2,db)
         else:
-            print('Too many datetime inputs. Statistics_tool takes max of 2 datetimes, given ' + str(len(args['datetimes'])))
+            print('Too many datetime inputs. Statistics_tool takes max of '
+                  '2 datetimes, given ' + str(len(args['datetimes'])))
             return 8
 
     else:
