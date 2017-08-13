@@ -2,10 +2,85 @@ import datetime
 from pytz import timezone
 import dateutil.parser
 import argparse
+from math import sqrt
 from day_info import Day_Info
 from database import Database
 
-# TODO: test this function
+"""
+ERROR CODES
+1.FileNotFound in parse_file
+2.ValueError for datetime in parse_file
+3.ValueError for price in parse_file
+4.ValueError for unit in parse_file
+5.EmptyDbError in search_db
+6.TypeError for given date_time in search_db
+7.EmptyDbError in get_statistics
+8.
+
+
+"""
+
+# get_statistics returns statistics about a range of values within the database defined by CLI given datetime objects
+# TODO: need to comment and test
+def get_statistics(date_time1,date_time2,db):
+
+    # if the database is empty there cannot be any information returned
+    if db.is_empty():
+
+        print("File has no entries therefore cannot return information")
+        return 7
+
+    else:
+        # need to know which is the larger date and which is the smaller date
+        min_date = min(date_time1,date_time2)
+        max_date = max(date_time1,date_time2)
+
+        min_date_utc = min_date.replace(tzinfo=timezone('UTC'))
+        max_date_utc = max_date.replace(tzinfo=timezone('UTC'))
+
+        date_info_arr = db.lookup_range(min_date_utc,max_date_utc)
+
+        price_arr = []
+        units_arr = []
+        max_price = -float("inf")
+        min_price = float("inf")
+        avg_price = 0
+        avg_units = 0
+        sd_units = 0
+
+        for di in date_info_arr:
+
+            if max_price < di.get_price():
+                max_price = di.get_price()
+
+            if min_price > di.get_price():
+                min_price = di.get_price()
+
+            price_arr.append(di.get_price())
+            units_arr.append(di.get_units())
+            avg_price += di.get_price()
+            avg_units += di.get_units()
+
+        avg_price /= float(len(date_info_arr))
+        avg_units /= float(len(date_info_arr))
+        units_arr.sort()
+        print("Average Price:  %.2f" %avg_price)
+        print("Minimum Price:  %.2f" %min_price)
+        print("Maximum Price:  %.2f" %max_price)
+        if len(units_arr) % 2 == 0:
+            median_units = (units_arr[int(len(units_arr)/2)] + units_arr[int(len(units_arr)/2)-1])/2
+            print("Median Units:  %.2f" %median_units)
+        else:
+            print("Median Units: " + str(units_arr[len(units_arr)/2]))
+        for num in units_arr:
+            sd_units += abs((avg_units - num)**2)
+        sd_units /= float(len(units_arr))
+        sd_units = sqrt(sd_units)
+        print("Standard Deviation of Units: %.2f" %sd_units)
+
+        return 0
+
+
 # search_db searches the db for the desired datetime object and prints the information
 def search_db(date_time, db):
 
@@ -139,10 +214,10 @@ def main():
         elif len(args['datetimes']) == 2:
             # do the statistics
             print('doing statistics')
-            return 8 #TODO: change value later
+            return 7 #TODO: change value later
         else:
             print('Too many datetime inputs. Statistics_tool takes max of 2 datetimes, given ' + str(len(args['datetimes'])))
-            return 7 #TODO: change value later
+            return 12312 #TODO: change value later
 
     else:
         return val

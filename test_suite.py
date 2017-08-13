@@ -1,6 +1,6 @@
 import unittest
 import datetime
-from statistics_tool import parse_file, search_db
+from statistics_tool import parse_file, search_db, get_statistics
 from database import Database
 from day_info import Day_Info
 
@@ -19,11 +19,11 @@ class TestDI(unittest.TestCase):
 
         self.assertEqual(100, di.get_price())
 
-    def test_get_quantity(self):
+    def test_get_units(self):
 
         di = Day_Info(datetime.datetime(2005, 1, 2, 3, 4), 100, 2)
 
-        self.assertEqual(2, di.get_quantity())
+        self.assertEqual(2, di.get_units())
 
     def test_compare_same(self):
 
@@ -46,7 +46,7 @@ class TestDI(unittest.TestCase):
 
         self.assertEqual(di_1.compare(di_2), False)
 
-    def test_compare_different_quantity(self):
+    def test_compare_different_units(self):
 
         di_1 = Day_Info(datetime.datetime(2005, 1, 2, 3), 1, 2)
         di_2 = Day_Info(datetime.datetime(2005, 1, 2, 3), 1, 100)
@@ -468,6 +468,16 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(datetime.datetime(2017,5,31),db),0)
 
+    def test_get_statistics_all(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+
+
+        self.assertEqual(get_statistics(datetime.datetime(2000,1,2,3),datetime.datetime(2020,1,2,3),db),0)
 
 
 
