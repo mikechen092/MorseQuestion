@@ -427,6 +427,7 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(3,db),6)
 
+    # tests search_db if the correct code is returned when the datetime is less than the range of the database
     def test_search_db_datetime_less(self):
         db = Database()
 
@@ -435,6 +436,37 @@ class TestStatisticsTool(unittest.TestCase):
         # ensures parse_file is working correctly
         self.assertEqual(val, 0)
         self.assertEqual(search_db(datetime.datetime(2005,1,2,3),db),0)
+
+    # tests search_db if the correct code is returned when the datetime is greater than the range of the database
+    def test_search_db_datetime_greater(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+
+        self.assertEqual(search_db(datetime.datetime(2020,1,2,3),db),0)
+
+    # tests search_db if the correct code is returned when the datetime is included in the database
+    def test_search_db_datetime_included(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+        self.assertEqual(search_db(datetime.datetime(2017,6,12,9,51,21),db),0)
+
+    # tests search_db if the correct code is returned when the datetime is not included in the database
+    def test_search_db_datetime_not_included(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt",db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+        self.assertEqual(search_db(datetime.datetime(2017,5,31),db),0)
 
 
 

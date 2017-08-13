@@ -19,15 +19,15 @@ def search_db(date_time, db):
 
         # try to compare the date given with the smallest day_info object
         try:
+            # make sure date_time given is in UTC or else you cannot comapre
             date_time_utc = date_time.replace(tzinfo=timezone('UTC'))
+
             # if the date given is smaller than the smallest entry in the database then
             # return information about the smallest entry in the database
             if date_time_utc < db.get_min().get_date():
-                print("hello")
                 print("Datetime object given is smaller than the smallest entry found in the file. "
                       "Returning information about smallest item")
                 print("Price at " + str(db.get_min().get_date()) + ": " + str(db.get_min().get_price()))
-                return 0
 
             # if the date given is larger than the largest entry in the database then
             # return information about the largest entry in the database
@@ -54,11 +54,12 @@ def search_db(date_time, db):
                     print("Price at " + str(date_time_utc) + ": " + str(avg))
 
             return 0
+
         # if there is a type error when comparing the given object and the smallest day_info date
         # then the object given is not a datetime object
         except:
 
-            print("Object given is not datetime object")
+            print("Object given is " + str(type(date_time)) + " and cannot be compared to a datetime object")
             return 6
 
 # every line in the file is taken and converted into a day_info obj
@@ -81,6 +82,8 @@ def parse_file(filename,db):
             try:
 
                 dt = dateutil.parser.parse(time)
+                # make sure timezone is converted into UTC
+                dt_utc = dt.replace(tzinfo=timezone('UTC'))
 
 
             except ValueError:
@@ -104,7 +107,7 @@ def parse_file(filename,db):
                 return 4
 
             # create a new day_info object and add it to the database
-            new_di = Day_Info(dt, float(price), int(units))
+            new_di = Day_Info(dt_utc, float(price), int(units))
             db.add_entry(new_di)
 
         f.close()
