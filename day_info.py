@@ -12,6 +12,7 @@ class Day_Info():
 
         self.quantity = q
 
+    # returns price
     def get_price(self):
 
         return self.price
@@ -26,6 +27,14 @@ class Day_Info():
 
         return self.date_time
 
-    # returns true/false when comparing to another date_price obj (NECESSARY?)
-    # def compare(self,other_dt):
+    # given another day_info object check if the two are equivalent
+    def compare(self,other_di_obj):
+
+        if (self.date_time == other_di_obj.get_date() and
+        self.price == other_di_obj.get_price() and
+        self.quantity == other_di_obj.get_quantity()):
+            return True
+
+        return False
+
 

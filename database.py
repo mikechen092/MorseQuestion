@@ -6,7 +6,6 @@ class Database():
     def __init__(self):
 
         # array of sorted date_price obj by date
-
         self.db = []
 
         # TODO: check if want to use hashtable instead of array? ->
@@ -28,6 +27,13 @@ class Database():
             entry_num += 1
 
         self.db.insert(entry_num,di_obj)
+
+    def is_empty(self):
+
+        if len(self.db) == 0:
+            return True
+
+        return False
 
     # gets min time in db -> assumes caller knows db is filled
     def get_min(self):
