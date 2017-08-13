@@ -15,13 +15,13 @@ ERROR CODES
 5.EmptyDbError in search_db
 6.TypeError for given date_time in search_db
 7.EmptyDbError in get_statistics
-8.
+8.NumberOfArgumentsError in main
 
 
 """
+#TODO: find a way to check print statements in unittest
 
 # get_statistics returns statistics about a range of values within the database defined by CLI given datetime objects
-# TODO: need to comment and test
 def get_statistics(date_time1,date_time2,db):
 
     # if the database is empty there cannot be any information returned
@@ -35,10 +35,17 @@ def get_statistics(date_time1,date_time2,db):
         min_date = min(date_time1,date_time2)
         max_date = max(date_time1,date_time2)
 
+        # convert dates into UTC to resolve compatibility issues
         min_date_utc = min_date.replace(tzinfo=timezone('UTC'))
         max_date_utc = max_date.replace(tzinfo=timezone('UTC'))
 
+        # get the array of database entries that lie in the range defined by min_date and max_date
         date_info_arr = db.lookup_range(min_date_utc,max_date_utc)
+
+        if len(date_info_arr) == 0:
+            print("No entries in the file within the given dates. Giving information about adjacent dates.")
+            val = search_db(max_date_utc,db)
+            return val
 
         price_arr = []
         units_arr = []
@@ -48,6 +55,7 @@ def get_statistics(date_time1,date_time2,db):
         avg_units = 0
         sd_units = 0
 
+        # search the array returned by lookup_range for the information relevant to the statistics desired
         for di in date_info_arr:
 
             if max_price < di.get_price():
@@ -56,24 +64,44 @@ def get_statistics(date_time1,date_time2,db):
             if min_price > di.get_price():
                 min_price = di.get_price()
 
+            # store the prices and units into separate arrays for later use
             price_arr.append(di.get_price())
             units_arr.append(di.get_units())
+
             avg_price += di.get_price()
             avg_units += di.get_units()
 
+        # calculate the average price and the average units
         avg_price /= float(len(date_info_arr))
         avg_units /= float(len(date_info_arr))
+
+        # sort the units array to find the median -> python sorts in nlogn
         units_arr.sort()
+
+        # output price information
         print("Average Price:  %.2f" %avg_price)
         print("Minimum Price:  %.2f" %min_price)
         print("Maximum Price:  %.2f" %max_price)
-        if len(units_arr) % 2 == 0:
-            median_units = (units_arr[int(len(units_arr)/2)] + units_arr[int(len(units_arr)/2)-1])/2
-            print("Median Units:  %.2f" %median_units)
+
+        if len(date_info_arr) == 1:
+            print("Median Units:  %.2f" %units_arr[0])
+
         else:
-            print("Median Units: " + str(units_arr[len(units_arr)/2]))
+            # find the median of the units_arr
+            if len(units_arr) % 2 == 0:
+
+                median_units = (units_arr[int(len(units_arr)/2)] + units_arr[int(len(units_arr)/2)-1])/2
+                print("Median Units:  %.2f" %median_units)
+
+            else:
+
+                print("Median Units:  %.2f" %units_arr[len(units_arr)/2])
+
+        # calculate the standard deviation
         for num in units_arr:
+
             sd_units += abs((avg_units - num)**2)
+
         sd_units /= float(len(units_arr))
         sd_units = sqrt(sd_units)
         print("Standard Deviation of Units: %.2f" %sd_units)
@@ -94,6 +122,7 @@ def search_db(date_time, db):
 
         # try to compare the date given with the smallest day_info object
         try:
+            print(date_time)
             # make sure date_time given is in UTC or else you cannot comapre
             date_time_utc = date_time.replace(tzinfo=timezone('UTC'))
 
@@ -102,14 +131,14 @@ def search_db(date_time, db):
             if date_time_utc < db.get_min().get_date():
                 print("Datetime object given is smaller than the smallest entry found in the file. "
                       "Returning information about smallest item")
-                print("Price at " + str(db.get_min().get_date()) + ": " + str(db.get_min().get_price()))
+                print("Price at ",str(db.get_min().get_date()),": %.2f" %(db.get_min().get_price()))
 
             # if the date given is larger than the largest entry in the database then
             # return information about the largest entry in the database
             elif date_time_utc > db.get_max().get_date():
                 print("Datetime object given is larger than the largest entry found in the file. "
                       "Returning information about largest item")
-                print("Price at " + str(db.get_max().get_date()) + ": " + str(db.get_max().get_price()))
+                print("Price at ",str(db.get_max().get_date()),": %.2f" %(db.get_max().get_price()))
 
             else:
                 # the lookup function always returns a tuple of two day_info objects
@@ -118,7 +147,7 @@ def search_db(date_time, db):
                 # if the two objects are the same then the date given is included in the database
                 if di_1.compare(di_2):
 
-                    print("Price at " + str(di_1.get_date()) + ": " + str(di_1.get_price()))
+                    print("Price at ",str(di_1.get_date()), ": %.2f" %(di_1.get_price()))
 
                 # if the two objects are not the same then the date given is not included in the
                 # database so you need to average the adjacent entries
@@ -126,7 +155,7 @@ def search_db(date_time, db):
 
                     avg = (di_1.get_price() + di_2.get_price())/2
 
-                    print("Price at " + str(date_time_utc) + ": " + str(avg))
+                    print("Price at ",str(date_time_utc),": %.2f" %(avg))
 
             return 0
 
@@ -134,7 +163,7 @@ def search_db(date_time, db):
         # then the object given is not a datetime object
         except:
 
-            print("Object given is " + str(type(date_time)) + " and cannot be compared to a datetime object")
+            print("Object given is ",str(type(date_time))," and cannot be compared to a datetime object")
             return 6
 
 # every line in the file is taken and converted into a day_info obj
@@ -162,7 +191,7 @@ def parse_file(filename,db):
 
 
             except ValueError:
-                print("Error in parsing. Make sure in line " + str(linenum) +  "  the time is in ISO-8061 format")
+                print("Error in parsing. Make sure in line %d the time is in ISO-8061 format" %linenum)
                 return 2
 
             # make sure the price in the file is in the appropriate format
@@ -170,7 +199,7 @@ def parse_file(filename,db):
                 p = float(price)
 
             except ValueError:
-                print("Error in parsing. Make sure in line " + str(linenum) +  " the price is a valid value")
+                print("Error in parsing. Make sure in line %d the price is a valid value" %linenum)
                 return 3
 
             # make sure the units in the file is in the appropriate format
@@ -178,7 +207,7 @@ def parse_file(filename,db):
                 q = int(units)
 
             except ValueError:
-                print("Error in parsing. Make sure in line " + str(linenum) + " the number of units is a valid value")
+                print("Error in parsing. Make sure in line %d the number of units is a valid value" %linenum)
                 return 4
 
             # create a new day_info object and add it to the database
@@ -190,7 +219,7 @@ def parse_file(filename,db):
 
     # give user error message
     except FileNotFoundError:
-        print("Could not open file path \"" + filename + "\". Make sure file is in correct directory")
+        print("Could not open file path \"",filename,"\". Make sure file is in correct directory")
         return 1
 
 
@@ -209,15 +238,16 @@ def main():
 
         if len(args['datetimes']) == 1:
             # do the lookup
-            return search_db(args['datetimes'],db)
+            return search_db(args['datetimes'][0],db)
 
         elif len(args['datetimes']) == 2:
             # do the statistics
-            print('doing statistics')
-            return 7 #TODO: change value later
+            dt1 = args['datetimes'][0]
+            dt2 = args['datetimes'][1]
+            return get_statistics(dt1,dt2,db)
         else:
             print('Too many datetime inputs. Statistics_tool takes max of 2 datetimes, given ' + str(len(args['datetimes'])))
-            return 12312 #TODO: change value later
+            return 8
 
     else:
         return val

@@ -7,12 +7,14 @@ from day_info import Day_Info
 # testing day_info functions
 class TestDI(unittest.TestCase):
 
+    # tests if get_date returns the correct date
     def test_get_date(self):
 
         di = Day_Info(datetime.datetime(2005,1,2,3,4),100,2)
 
         self.assertEqual(datetime.datetime(2005,1,2,3,4),di.get_date())
 
+    # tests if get_price returns the correct price
     def test_get_price(self):
 
         di = Day_Info(datetime.datetime(2005, 1, 2, 3, 4), 100, 2)
@@ -468,6 +470,7 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(datetime.datetime(2017,5,31),db),0)
 
+    # tests get_statistics if the statistics are correct when the range of dates provided encompass all entries
     def test_get_statistics_all(self):
         db = Database()
 
@@ -476,12 +479,29 @@ class TestStatisticsTool(unittest.TestCase):
         # ensures parse_file is working correctly
         self.assertEqual(val, 0)
 
-
         self.assertEqual(get_statistics(datetime.datetime(2000,1,2,3),datetime.datetime(2020,1,2,3),db),0)
 
+    # tests get_statistics if the statistics are correct when the range of dates provided encompasses one entry
+    def test_get_statistics_one(self):
+        db = Database()
 
+        val = parse_file("test_files\\sample_test.txt",db)
 
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
 
+        self.assertEqual(get_statistics(datetime.datetime(2017,5,14,3),datetime.datetime(2017,5,30,3),db),0)
+
+    # tests get_statistics if the statistics are correct when the range of the dates provided encompasses no entries
+    def test_get_statistics_none(self):
+        db = Database()
+
+        val = parse_file("test_files\\sample_test.txt", db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+
+        self.assertEqual(get_statistics(datetime.datetime(2017, 5, 14, 3), datetime.datetime(2017, 5, 18, 3), db), 0)
 
 
 if __name__ == '__main__':
