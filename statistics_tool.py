@@ -18,7 +18,6 @@ ERROR CODES
 8.NumberOfArgumentsError in main
 
 """
-#TODO: find a way to check print statements in unittest
 
 # get_statistics - prints statistics about a range of values within the database
 #                  defined by the datetimes given. does not assume first datetime is
@@ -137,14 +136,14 @@ def search_db(date_time, db):
             if date_time_utc < db.get_min().get_date():
                 print("Datetime object given is smaller than the smallest entry found in the file. "
                       "Returning information about smallest item")
-                print("Price at ",str(db.get_min().get_date()),": %.2f" %(db.get_min().get_price()))
+                print("Price at",str(db.get_min().get_date()),": %.2f" %(db.get_min().get_price()))
 
             # if the date given is larger than the largest entry in the database then
             # return information about the largest entry in the database
             elif date_time_utc > db.get_max().get_date():
                 print("Datetime object given is larger than the largest entry found in the file. "
                       "Returning information about largest item")
-                print("Price at ",str(db.get_max().get_date()),": %.2f" %(db.get_max().get_price()))
+                print("Price at",str(db.get_max().get_date()),": %.2f" %(db.get_max().get_price()))
 
             else:
                 # the lookup function always returns a tuple of two day_info objects
@@ -153,7 +152,7 @@ def search_db(date_time, db):
                 # if the two objects are the same then the date given is included in the database
                 if di_1.compare(di_2):
 
-                    print("Price at ",str(di_1.get_date()), ": %.2f" %(di_1.get_price()))
+                    print("Price at",str(di_1.get_date()),": %.2f" %(di_1.get_price()))
 
                 # if the two objects are not the same then the date given is not included in the
                 # database so you need to average the adjacent entries
@@ -161,7 +160,7 @@ def search_db(date_time, db):
 
                     avg = (di_1.get_price() + di_2.get_price())/2
 
-                    print("Price at ",str(date_time_utc),": %.2f" %(avg))
+                    print("Price at",str(date_time_utc),": %.2f" %(avg))
 
             return 0
 
@@ -169,7 +168,7 @@ def search_db(date_time, db):
         # then the object given is not a datetime object
         except:
 
-            print("Object given is ",str(type(date_time))," and cannot be compared to a datetime object")
+            print("Object given is",str(type(date_time)),"and cannot be compared to a datetime object")
             return 6
 
 # parse_file - every line in the file is taken and converted into a day_info obj and
@@ -241,20 +240,26 @@ def main():
     parser.add_argument('filepath',help='file path containing datetime price and number of units')
     parser.add_argument('datetimes', metavar='D', type=str, nargs='+',help='list of datetimes')
     args = vars(parser.parse_args())
+
     db = Database()
     val = parse_file(args['filepath'],db)
+
     if val == 0:
 
         if len(args['datetimes']) == 1:
+
             # do the lookup
             return search_db(args['datetimes'][0],db)
 
         elif len(args['datetimes']) == 2:
+
             # do the statistics
             dt1 = args['datetimes'][0]
             dt2 = args['datetimes'][1]
             return get_statistics(dt1,dt2,db)
+
         else:
+
             print('Too many datetime inputs. Statistics_tool takes max of '
                   '2 datetimes, given ' + str(len(args['datetimes'])))
             return 8

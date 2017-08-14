@@ -1,5 +1,7 @@
 import unittest
 import datetime
+import sys
+from io import StringIO
 from statistics_tool import parse_file, search_db, get_statistics
 from database import Database
 from day_info import Day_Info
@@ -376,7 +378,8 @@ class TestDB(unittest.TestCase):
         self.assertTrue(arr[2].compare(day_info5))
         self.assertTrue(arr[3].compare(day_info6))
 
-class TestStatisticsTool(unittest.TestCase):
+# testing parse_file function within statistics tool
+class TestParseFile(unittest.TestCase):
 
     # tests for correct functionality of database
     def test_parse_file(self):
@@ -384,44 +387,100 @@ class TestStatisticsTool(unittest.TestCase):
 
         self.assertEqual(parse_file("test_files\\sample_test.txt",db), 0)
 
-
     # test parse_file function if the correct error code is returned if the filename is not valid
     def test_parse_file_filename(self):
         db = Database()
 
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
+
         self.assertEqual(parse_file("test_files\\not_real_file_name.txt",db),1)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Could not open file path \" test_files\\not_real_file_name.txt \". "
+                         "Make sure file is in correct directory\n",capture.getvalue())
+
 
     # test parse_file function if the correct error code is returned if the dates within the file are not valid
     def test_parse_file_date(self):
         db = Database()
 
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
+
         self.assertEqual(parse_file("test_files\\incorrect_dates.txt", db), 2)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Error in parsing. Make sure in line 2 the time is in ISO-8061 format\n",capture.getvalue())
 
     # test parse_file function if the correct error code is returned if the prices within the file are not valid
     def test_parse_file_price(self):
         db = Database()
 
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
+
         self.assertEqual(parse_file("test_files\\incorrect_prices.txt",db), 3)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Error in parsing. Make sure in line 4 the price is a valid value\n",capture.getvalue())
+
 
     # test parse_file function if the correct error code is returned if the units within the file are not valid
     def test_parse_file_units(self):
         db = Database()
 
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
+
         self.assertEqual(parse_file("test_files\\incorrect_units.txt", db), 4)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Error in parsing. Make sure in line 3 the number of "
+                         "units is a valid value\n",capture.getvalue())
+
+# testing the search_db function within statistics tool
+class TestSearchDB(unittest.TestCase):
 
     # tests search_db function if correct error code is returned when database is empty
     def test_search_db_empty(self):
         db = Database()
 
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
+
         val = parse_file("test_files\\empty_file.txt",db)
 
         # ensures parse_file is working correctly
         self.assertEqual(val,0)
+
         self.assertEqual(search_db(datetime.datetime(2005,3,2,1),db),5)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("File has no entries therefore cannot return information\n",capture.getvalue())
 
     # tests search_db function if correct error code is returned when function is given invalid datetime
     def test_search_db_comparison(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -429,9 +488,19 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(3,db),6)
 
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Object given is <class 'int'> and cannot be "
+                         "compared to a datetime object\n",capture.getvalue())
+
     # tests search_db if the correct code is returned when the datetime is less than the range of the database
     def test_search_db_datetime_less(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -439,9 +508,19 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(datetime.datetime(2005,1,2,3),db),0)
 
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Datetime object given is smaller than the smallest entry found in the file. "
+              "Returning information about smallest item\nPrice at 2017-03-01 13:37:59+00:00 : 21.37\n",capture.getvalue())
+
     # tests search_db if the correct code is returned when the datetime is greater than the range of the database
     def test_search_db_datetime_greater(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -450,9 +529,19 @@ class TestStatisticsTool(unittest.TestCase):
 
         self.assertEqual(search_db(datetime.datetime(2020,1,2,3),db),0)
 
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Datetime object given is larger than the largest entry found in the file. "
+         "Returning information about largest item\nPrice at 2017-06-12 09:51:21+00:00 : 17.21\n",capture.getvalue())
+
     # tests search_db if the correct code is returned when the datetime is included in the database
     def test_search_db_datetime_included(self):
         db = Database()
+        
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -460,9 +549,19 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(datetime.datetime(2017,6,12,9,51,21),db),0)
 
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Price at 2017-06-12 09:51:21+00:00 : 17.21\n",capture.getvalue())
+
+
     # tests search_db if the correct code is returned when the datetime is not included in the database
     def test_search_db_datetime_not_included(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -470,9 +569,41 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
         self.assertEqual(search_db(datetime.datetime(2017,5,31),db),0)
 
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Price at 2017-05-31 00:00:00+00:00 : 20.15\n",capture.getvalue())
+
+# testing get_statistics function within Statistics tool
+class TestGetStatistics(unittest.TestCase):
+
+    # tests get_statistics if the database is empty
+    def test_get_statistics_empty(self):
+        db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
+
+        val = parse_file("test_files\\empty_file.txt", db)
+
+        # ensures parse_file is working correctly
+        self.assertEqual(val, 0)
+
+        self.assertEqual(get_statistics(datetime.datetime(2000, 1, 2, 3), datetime.datetime(2020, 1, 2, 3), db), 7)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("File has no entries therefore cannot return information\n",capture.getvalue())
+
     # tests get_statistics if the statistics are correct when the range of dates provided encompass all entries
     def test_get_statistics_all(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -481,9 +612,20 @@ class TestStatisticsTool(unittest.TestCase):
 
         self.assertEqual(get_statistics(datetime.datetime(2000,1,2,3),datetime.datetime(2020,1,2,3),db),0)
 
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Average Price:  20.46\nMinimum Price:  17.21\n"
+                         "Maximum Price:  23.09\nMedian Units:  77.50\n"
+                         "Standard Deviation of Units: 34615.62\n",capture.getvalue())
+
     # tests get_statistics if the statistics are correct when the range of dates provided encompasses one entry
     def test_get_statistics_one(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt",db)
 
@@ -492,9 +634,20 @@ class TestStatisticsTool(unittest.TestCase):
 
         self.assertEqual(get_statistics(datetime.datetime(2017,5,14,3),datetime.datetime(2017,5,30,3),db),0)
 
+        # reset23.09 21
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("Average Price:  23.09\nMinimum Price:  23.09\n"
+                         "Maximum Price:  23.09\nMedian Units:  21.00\n"
+                         "Standard Deviation of Units: 0.00\n", capture.getvalue())
+
     # tests get_statistics if the statistics are correct when the range of the dates provided encompasses no entries
     def test_get_statistics_none(self):
         db = Database()
+
+        # redirect stdout to capture
+        capture = StringIO()
+        sys.stdout = capture
 
         val = parse_file("test_files\\sample_test.txt", db)
 
@@ -502,6 +655,12 @@ class TestStatisticsTool(unittest.TestCase):
         self.assertEqual(val, 0)
 
         self.assertEqual(get_statistics(datetime.datetime(2017, 5, 14, 3), datetime.datetime(2017, 5, 18, 3), db), 0)
+
+        # reset
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual("No entries in the file within the given dates. Giving information about adjacent dates.\n"
+                         "Price at 2017-05-18 03:00:00+00:00 : 21.63\n",capture.getvalue())
 
 
 if __name__ == '__main__':
