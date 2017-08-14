@@ -7,6 +7,7 @@ from day_info import Day_Info
 from database import Database
 
 """
+
 ERROR CODES
 1.FileNotFound in parse_file
 2.ValueError for datetime in parse_file
@@ -244,6 +245,7 @@ def main():
     db = Database()
     val = parse_file(args['filepath'],db)
 
+    # if  there was no issue with parsing the file
     if val == 0:
 
         if len(args['datetimes']) == 1:

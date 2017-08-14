@@ -95,11 +95,11 @@ class Database():
                 break
 
         # find the first index where the larger datetime is greater than equal to something in the db
-        for i in range(len(self.db)-1,-1,-1):
+        for i in range(len(self.db)):
 
-            if dt_obj2 >= self.db[i].get_date():
-                # add one to the index b/c last number is non-inclusive
-                high_index = i + 1
+            if dt_obj2 < self.db[i].get_date():
+
+                high_index = i
                 break
 
         # take part of the database and return the array
